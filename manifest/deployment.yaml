@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: poc-admission-controller
+  labels:
+    app: poc-admission-controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: poc-admission-controller
+  template:
+    metadata:
+      labels:
+        app: poc-admission-controller
+    spec:
+      containers:
+        - name: poc-admission-controller
+          image: zeabix/poc-admission-controller:v0.1.6
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8443
+          volumeMounts:
+            - name: tls-certs
+              mountPath: /etc/certs
+              readOnly: true
+      volumes:
+        - name: tls-certs
+          secret:
+            secretName: poc-admission-controller-tls
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: poc-admission-controller
+spec:
+  selector:
+    app: poc-admission-controller
+  ports:
+    - port: 443
+      targetPort: 8443
